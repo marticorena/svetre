@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Department {
+  id        String   @id @default(uuid())
+  name      String
+  city      String
+  horses    Horse[]
+  histories DepartmentHistory[]
+}
+
+model DepartmentHistory {
+  id           String    @id @default(uuid())
+  horseId      String
+  departmentId String
+  startDate    DateTime  @default(now())
+  endDate      DateTime?
+  horse        Horse     @relation(fields: [horseId], references: [id])
+  department   Department @relation(fields: [departmentId], references: [id])
+}
+
+model Horse {
+  id          String   @id @default(uuid())
+  name        String
+  sex         String
+  status      String   @default("in_service")
+  dateOfBirth DateTime?
+  
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+
+  sireId    String?
+  sire      Horse?   @relation("SireRelation", fields: [sireId], references: [id])
+  sired     Horse[]  @relation("SireRelation")
+
+  damId     String?
+  dam       Horse?   @relation("DamRelation", fields: [damId], references: [id])
+  damed     Horse[]  @relation("DamRelation")
+
+  histories   DepartmentHistory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
